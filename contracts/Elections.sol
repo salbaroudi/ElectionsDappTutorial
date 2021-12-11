@@ -19,6 +19,10 @@ contract Election {
   mapping(uint => Candidate) public candidates;
   uint public candidatesCount;
 
+  //Quick lookup to see who has voted. If address is not present, will return null (?)
+  mapping(address => bool) public voters;
+
+
 
   string public candidate;
 
@@ -34,7 +38,21 @@ contract Election {
   function addCandidate (string memory _name) private {
     candidatesCount ++;
     candidates[candidatesCount] = Candidate(candidatesCount, _name, 0);
+  }
 
+  //understand variable scope/access: this function is called by the VOTER,
+  //and Solidity gives us access to their metadata via msg.sender() function
+  function vote (uint _candidateId) public {
+    //Check that the address has not voted before.
+    require(!voters[msg.sender]);
+    //Check we are voting for a valid candidate.
+    require(_candidateId > 0 && _candidateId <= candidatesCount);
+
+    //Record that voter has voted.
+    voters[msg.sender] = true;
+
+    //update candidate vote count
+    candidates[_candidateId].voteCount ++;
   }
 
 }
